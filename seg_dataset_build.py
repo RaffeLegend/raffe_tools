@@ -22,7 +22,7 @@ def build_dataset(image_dir, gt_dir, output_txt, data_list):
         for data in data_list:
             image, gt = data
             file_name = image.split("/")[-1]
-            gt_name = file_name.split(".")[0] + "_gt" + file_name.split(".")[-1]
+            gt_name = file_name.split(".")[0] + "_gt." + file_name.split(".")[-1]
             dest_path = os.path.join(image_dir, file_name)
             gt_path = os.path.join(gt_dir, gt_name)
             shutil.copy2(image, dest_path)
@@ -67,7 +67,7 @@ def read_dataset_from_txt(txt_file):
     return data_list
 
 # 设置 txt 文件路径
-txt_file = "/users/yiwei/project/MVSS-Net/data/yiwei.txt"  # 替换为你的 txt 文件路径
+txt_file = "/mnt/data2/users/chengyh1/datasets/HiFi/yiwei.txt"  # 替换为你的 txt 文件路径
 
 # 调用函数
 data_list = read_dataset_from_txt(txt_file)
