@@ -27,7 +27,7 @@ def resize_images(input_dir, output_dir, size=(256, 256)):
 
                     # Open and resize the image
                     with Image.open(input_file) as img:
-                        img = img.resize(size, Image.ANTIALIAS)
+                        img = img.resize(size, Image.Resampling.LANCZOS)
                         img.save(output_file)
                         print(f"Processed: {input_file} -> {output_file}")
             except Exception as e:
