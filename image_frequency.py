@@ -26,11 +26,17 @@ def get_frequency(image_path, output_path):
     f_shift = np.fft.fftshift(f_transform)  # 移频操作，低频移动到中心
     magnitude_spectrum = 20 * np.log(np.abs(f_shift))  # 计算幅值谱
     
-    # Step 3: 保存结果图像
+    # Step 3: 将幅值谱归一化到0-255并转换为8位图像
+    magnitude_spectrum = np.uint8(255 * (magnitude_spectrum - np.min(magnitude_spectrum)) / (np.max(magnitude_spectrum) - np.min(magnitude_spectrum)))
+    
+    # Step 4: 将灰度图像转换为彩色图像
+    color_magnitude_spectrum = cv2.applyColorMap(magnitude_spectrum, cv2.COLORMAP_JET)
+    
+    # Step 5: 保存结果图像
     output_name = os.path.splitext(os.path.basename(image_path))[0] + '_frequency.png'
     output_path = os.path.join(output_path, output_name)
-    cv2.imwrite(output_path, magnitude_spectrum)
-    return magnitude_spectrum
+    cv2.imwrite(output_path, color_magnitude_spectrum)
+    return color_magnitude_spectrum
 
 if __name__ == "__main__":
     input_path = '/path/to/your/image/directory'
