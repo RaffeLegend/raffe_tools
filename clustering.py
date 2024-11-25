@@ -20,8 +20,9 @@ def load_images_from_folder(folder_path):
     return file_contents, file_names
 
 def cluster_files(file_contents, num_clusters=5):
-    vectorizer = TfidfVectorizer(stop_words='english')
-    X = vectorizer.fit_transform(file_contents)
+
+    flattened_images = [img.flatten() for img in file_contents]
+    X = np.array(flattened_images)
     
     kmeans = KMeans(n_clusters=num_clusters, random_state=42)
     kmeans.fit(X)
