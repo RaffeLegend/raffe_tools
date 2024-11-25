@@ -17,11 +17,12 @@ def load_images_from_folder(folder_path):
             file_path = os.path.join(root, file_name)
             if os.path.isfile(file_path) and file_name.lower().endswith(('.png', '.jpg', '.jpeg', '.bmp', '.gif')):
                 with Image.open(file_path) as img:
+                    img = img.resize((128, 128))
                     file_contents.append(np.array(img))
                     file_names.append(file_name)
     return file_contents, file_names
 
-def cluster_files(file_contents, num_clusters=5):
+def cluster_files(file_contents, num_clusters=2):
 
     flattened_images = [img.flatten() for img in file_contents]
     X = np.array(flattened_images)
@@ -33,7 +34,7 @@ def cluster_files(file_contents, num_clusters=5):
 
 def visualize_clusters(kmeans, X, file_names):
     pca = PCA(n_components=2)
-    principal_components = pca.fit_transform(X.toarray())
+    principal_components = pca.fit_transform(X)
     
     plt.figure(figsize=(10, 7))
     scatter = plt.scatter(principal_components[:, 0], principal_components[:, 1], c=kmeans.labels_, cmap='viridis')
