@@ -11,12 +11,14 @@ import matplotlib.pyplot as plt
 def load_images_from_folder(folder_path):
     file_contents = []
     file_names = []
-    for file_name in os.listdir(folder_path):
-        file_path = os.path.join(folder_path, file_name)
-        if os.path.isfile(file_path) and file_name.lower().endswith(('.png', '.jpg', '.jpeg', '.bmp', '.gif')):
-            with Image.open(file_path) as img:
-                file_contents.append(np.array(img))
-                file_names.append(file_name)
+
+    for root, _, files in os.walk(folder_path):
+        for file_name in files:
+            file_path = os.path.join(root, file_name)
+            if os.path.isfile(file_path) and file_name.lower().endswith(('.png', '.jpg', '.jpeg', '.bmp', '.gif')):
+                with Image.open(file_path) as img:
+                    file_contents.append(np.array(img))
+                    file_names.append(file_name)
     return file_contents, file_names
 
 def cluster_files(file_contents, num_clusters=5):
