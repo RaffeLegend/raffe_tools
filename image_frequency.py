@@ -22,9 +22,11 @@ def get_frequency(image_path, output_path):
     image = cv2.imread(image_path, cv2.IMREAD_GRAYSCALE)
 
     # Step 2: 计算傅里叶变换
-    f_transform = np.fft.fft2(image)
+    f_transform = cv2.dft(np.float32(image), flags=cv2.DFT_COMPLEX_OUTPUT)
+    # f_transform = np.fft.fft2(image)
     f_shift = np.fft.fftshift(f_transform)  # 移频操作，低频移动到中心
-    magnitude_spectrum = 20 * np.log(np.abs(f_shift))  # 计算幅值谱
+    # magnitude_spectrum = 20 * np.log(np.abs(f_shift))  # 计算幅值谱
+    magnitude_spectrum = 20 * np.log(cv2.magnitude(f_shift[:, :, 0], f_shift[:, :, 1]) + 1)
     
     # Step 3: 将幅值谱归一化到0-255并转换为8位图像
     magnitude_spectrum = np.uint8(255 * (magnitude_spectrum - np.min(magnitude_spectrum)) / (np.max(magnitude_spectrum) - np.min(magnitude_spectrum)))
@@ -39,8 +41,8 @@ def get_frequency(image_path, output_path):
     return color_magnitude_spectrum
 
 if __name__ == "__main__":
-    input_path = '/path/to/your/image/directory'
-    output_path = '/path/to/your/output/directory'
+    input_path = '/mnt/data2/users/hilight/yiwei/dataset/TestSet'
+    output_path = '/mnt/data2/users/hilight/yiwei/dataset/frequency'
     os.makedirs(output_path, exist_ok=True)
     image_list = get_image_list(directory=input_path)
     for image_path in image_list:
