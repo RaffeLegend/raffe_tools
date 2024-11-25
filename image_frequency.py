@@ -17,19 +17,23 @@ def get_image_list(directory):
 
     return image_files
 
-def get_frequency(image_path, output_path):
+def get_frequency(image_path, output_path, method='DCT'):
     # Step 1: 加载图像
     image = cv2.imread(image_path, cv2.IMREAD_GRAYSCALE)
 
     # Step 2: 计算傅里叶变换
-    # f_transform = cv2.dft(np.float32(image), flags=cv2.DFT_COMPLEX_OUTPUT)
-    f_transform = cv2.dct(np.float32(image))
-    magnitude_spectrum = np.log(np.abs(f_transform) + 1)
-    # f_transform = np.fft.fft2(image)
-    # f_shift = np.fft.fftshift(f_transform)  # 移频操作，低频移动到中心
-    # magnitude_spectrum = 20 * np.log(np.abs(f_shift))  # 计算幅值谱
-    # magnitude_spectrum = 20 * np.log(cv2.magnitude(f_shift[:, :, 0], f_shift[:, :, 1]) + 1)
-    
+    if method == 'DFT':
+        f_transform = cv2.dft(np.float32(image), flags=cv2.DFT_COMPLEX_OUTPUT)
+        magnitude_spectrum = 20 * np.log(cv2.magnitude(f_transform[:, :, 0], f_transform[:, :, 1]) + 1)
+    elif method == 'FFT':
+        f_transform = np.fft.fft2(image)
+        f_shift = np.fft.fftshift(f_transform)  # 移频操作，低频移动到中心
+        magnitude_spectrum = 20 * np.log(np.abs(f_shift) + 1)  # 计算幅值谱
+    elif method == 'DCT':
+        f_transform = cv2.dct(np.float32(image))
+        magnitude_spectrum = np.log(np.abs(f_transform) + 1)
+    else:
+        raise ValueError("Unsupported method. Choose from 'DFT', 'FFT', or 'DCT'.")
     # Step 3: 将幅值谱归一化到0-255并转换为8位图像
     magnitude_spectrum = np.uint8(255 * (magnitude_spectrum - np.min(magnitude_spectrum)) / (np.max(magnitude_spectrum) - np.min(magnitude_spectrum)))
     
