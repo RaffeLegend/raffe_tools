@@ -3,17 +3,19 @@ import numpy as np
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.cluster import KMeans
 from sklearn.decomposition import PCA
+from PIL import Image
 
 import matplotlib.pyplot as plt
 
-def load_files_from_folder(folder_path):
+
+def load_images_from_folder(folder_path):
     file_contents = []
     file_names = []
     for file_name in os.listdir(folder_path):
         file_path = os.path.join(folder_path, file_name)
-        if os.path.isfile(file_path):
-            with open(file_path, 'r', encoding='utf-8') as file:
-                file_contents.append(file.read())
+        if os.path.isfile(file_path) and file_name.lower().endswith(('.png', '.jpg', '.jpeg', '.bmp', '.gif')):
+            with Image.open(file_path) as img:
+                file_contents.append(np.array(img))
                 file_names.append(file_name)
     return file_contents, file_names
 
@@ -41,10 +43,9 @@ def visualize_clusters(kmeans, X, file_names):
     plt.xlabel('Principal Component 1')
     plt.ylabel('Principal Component 2')
     plt.savefig('clustering_visualization.png')
-    plt.show()
 
 if __name__ == "__main__":
-    folder_path = 'Users/river/Downloads/frequency'
-    file_contents, file_names = load_files_from_folder(folder_path)
+    folder_path = '/mnt/data2/users/hilight/yiwei/dataset/frequency'
+    file_contents, file_names = load_images_from_folder(folder_path)
     kmeans, X = cluster_files(file_contents)
     visualize_clusters(kmeans, X, file_names)
