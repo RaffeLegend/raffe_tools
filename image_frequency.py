@@ -27,18 +27,22 @@ def get_frequency(image_path, output_path):
     magnitude_spectrum = 20 * np.log(np.abs(f_shift))  # 计算幅值谱
     
     # Step 3: 保存结果图像
-    output_name = os.path.splitext(image_path)[0] + '_frequency.png'
+    output_name = os.path.splitext(os.path.basename(image_path))[0] + '_frequency.png'
     output_path = os.path.join(output_path, output_name)
     cv2.imwrite(output_path, magnitude_spectrum)
     return magnitude_spectrum
 
 if __name__ == "__main__":
     input_path = '/path/to/your/image/directory'
-    output_path = ''
+    output_path = '/path/to/your/output/directory'
     os.makedirs(output_path, exist_ok=True)
     image_list = get_image_list(directory=input_path)
-
     for image_path in image_list:
-        get_frequency(image_path, output_path)
+        # Create the corresponding directory structure in the output path
+        relative_path = os.path.relpath(image_path, input_path)
+        output_image_path = os.path.join(output_path, os.path.dirname(relative_path))
+        os.makedirs(output_image_path, exist_ok=True)
+        
+        # Generate and save the frequency image
+        get_frequency(image_path, output_image_path)
         print(f"Frequency image saved for {image_path}")
-    
