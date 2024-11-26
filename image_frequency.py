@@ -22,11 +22,15 @@ def get_average_frequency(directory, method='DCT'):
             magnitude_spectrum = np.log(np.abs(f_transform) + 1)
         else:
             raise ValueError("Unsupported method. Choose from 'DFT', 'FFT', or 'DCT'.")
+
+        # Resize magnitude_spectrum to a fixed size (e.g., 256x256) before accumulation
+        fixed_size = (256, 256)
+        resized_magnitude_spectrum = cv2.resize(magnitude_spectrum, fixed_size)
         
         if frequency_sum is None:
-            frequency_sum = np.zeros_like(magnitude_spectrum)
+            frequency_sum = np.zeros_like(resized_magnitude_spectrum)
         
-        frequency_sum += magnitude_spectrum
+        frequency_sum += resized_magnitude_spectrum
         count += 1
     
     if count == 0:
