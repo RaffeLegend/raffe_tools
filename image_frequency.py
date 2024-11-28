@@ -2,6 +2,41 @@ import os
 import cv2
 import numpy as np
 
+def fft_filter(im, mode=1):
+    im = im.astype(np.float32)
+    im = im/255.0
+    for i in range(3):
+        img = im[:,:,i]
+        fft_img = np.fft.fft2(img)
+        fft_img = np.log(np.abs(fft_img)+1e-3)
+        fft_min = np.percentile(fft_img,5)
+        fft_max = np.percentile(fft_img,95)
+        fft_img = (fft_img - fft_min)/(fft_max - fft_min)
+        fft_img = (fft_img-0.5)*2
+        fft_img[fft_img<-1] = -1
+        fft_img[fft_img>1] = 1
+        #set mid and high freq to 0
+        if mode>0:
+            fft_img = np.fft.fftshift(fft_img)
+            if mode == 1:
+                fft_img[:57, :] = 0
+                fft_img[:, :57] = 0
+                fft_img[177:, :] = 0
+                fft_img[:, 177:] = 0
+            #set low and high freq to 0
+            elif mode == 2:
+                fft_img[:21, :] = 0
+                fft_img[:, :21] = 0
+                fft_img[203:, :] = 0
+                fft_img[:, 203:] = 0
+                fft_img[57:177, 57:177] = 0
+            #set low and mid freq to 0
+            elif mode == 3:
+                fft_img[21:203, 21:203] = 0
+            fft_img = np.fft.fftshift(fft_img)
+        im[:,:,i] = fft_img
+    return np.transpose(im, (2,0,1))
+
 def get_average_frequency(directory, method='DCT'):
     image_list = get_image_list(directory)
     frequency_sum = None
@@ -19,6 +54,9 @@ def get_average_frequency(directory, method='DCT'):
             magnitude_spectrum = 20 * np.log(np.abs(f_shift) + 1)
         elif method == 'DCT':
             f_transform = cv2.dct(np.float32(image))
+            magnitude_spectrum = np.log(np.abs(f_transform) + 1)
+        elif method == 'FFT_FILTER':
+            f_transform = fft_filter(image, mode=3)
             magnitude_spectrum = np.log(np.abs(f_transform) + 1)
         else:
             raise ValueError("Unsupported method. Choose from 'DFT', 'FFT', or 'DCT'.")
@@ -101,9 +139,10 @@ def get_frequency(image_path, output_path, method='DCT'):
 
 if __name__ == "__main__":
     input_path = '/mnt/data2/users/hilight/yiwei/dataset/TestSet'
-    output_path = '/mnt/data2/users/hilight/yiwei/dataset/frequency'
+    # output_path = '/mnt/data2/users/hilight/yiwei/dataset/frequency'
+    output_path = './'
     os.makedirs(output_path, exist_ok=True)
-    save_average_frequency_image(input_path, output_path, method='DCT')
+    save_average_frequency_image(input_path, output_path, method='FFT')
     # image_list = get_image_list(directory=input_path)
     # for image_path in image_list:
     #     # Create the corresponding directory structure in the output path
