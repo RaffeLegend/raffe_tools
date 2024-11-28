@@ -1,6 +1,7 @@
 import os
 import cv2
 import numpy as np
+import tqdm
 
 def fft_filter(im, mode=1):
     im = im.astype(np.float32)
@@ -42,7 +43,10 @@ def get_average_frequency(directory, method='DCT'):
     frequency_sum = None
     count = 0
     
+    progress_bar = tqdm(total=len(image_list), desc="Processing images")
     for image_path in image_list:
+        progress_bar.update(1)
+        
         image = cv2.imread(image_path, cv2.IMREAD_GRAYSCALE)
         
         if method == 'DFT':
@@ -70,6 +74,7 @@ def get_average_frequency(directory, method='DCT'):
         
         frequency_sum += resized_magnitude_spectrum
         count += 1
+        progress_bar.close()
     
     if count == 0:
         raise ValueError("No images found in the directory.")
