@@ -92,6 +92,14 @@ def save_average_frequency_image(directory, output_path, method='DCT'):
     # Convert to color image
     color_average_frequency = cv2.applyColorMap(normalized_frequency, cv2.COLORMAP_JET)
     
+    # Enhance contrast using CLAHE (Contrast Limited Adaptive Histogram Equalization)
+    clahe = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(8, 8))
+    lab = cv2.cvtColor(color_average_frequency, cv2.COLOR_BGR2LAB)
+    lab_planes = list(cv2.split(lab))
+    lab_planes[0] = clahe.apply(lab_planes[0])
+    lab = cv2.merge(lab_planes)
+    color_average_frequency = cv2.cvtColor(lab, cv2.COLOR_LAB2BGR)
+    
     # Save the result image
     output_name = 'average_frequency.png'
     output_file_path = os.path.join(output_path, output_name)
@@ -146,8 +154,8 @@ def get_frequency(image_path, output_path, method='DCT'):
     # Step 5: 保存结果图像
     output_name = os.path.splitext(os.path.basename(image_path))[0] + '_frequency.png'
     output_path = os.path.join(output_path, output_name)
-    cv2.imwrite(output_path, color_magnitude_spectrum)
-    return color_magnitude_spectrum
+    cv2.imwrite(output_path, combined_image)
+    return combined_image
 
 if __name__ == "__main__":
     input_path = '/Users/river/Downloads/0_real'
