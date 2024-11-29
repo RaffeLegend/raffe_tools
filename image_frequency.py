@@ -1,7 +1,7 @@
 import os
 import cv2
 import numpy as np
-import tqdm
+from tqdm import tqdm
 
 def fft_filter(im, mode=1):
     im = im.astype(np.float32)
@@ -74,7 +74,7 @@ def get_average_frequency(directory, method='DCT'):
         
         frequency_sum += resized_magnitude_spectrum
         count += 1
-        progress_bar.close()
+    progress_bar.close()
     
     if count == 0:
         raise ValueError("No images found in the directory.")
@@ -143,7 +143,7 @@ def get_frequency(image_path, output_path, method='DCT'):
     return color_magnitude_spectrum
 
 if __name__ == "__main__":
-    input_path = '/mnt/data2/users/hilight/yiwei/dataset/TestSet'
+    input_path = '/Users/river/Downloads/flickr_0003'
     # output_path = '/mnt/data2/users/hilight/yiwei/dataset/frequency'
     output_path = './'
     os.makedirs(output_path, exist_ok=True)
