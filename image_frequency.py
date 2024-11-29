@@ -66,7 +66,7 @@ def get_average_frequency(directory, method='DCT'):
             raise ValueError("Unsupported method. Choose from 'DFT', 'FFT', or 'DCT'.")
 
         # Resize magnitude_spectrum to a fixed size (e.g., 256x256) before accumulation
-        fixed_size = (256, 256)
+        fixed_size = (512, 512)
         resized_magnitude_spectrum = cv2.resize(magnitude_spectrum, fixed_size)
         
         if frequency_sum is None:
@@ -136,6 +136,13 @@ def get_frequency(image_path, output_path, method='DCT'):
     # Step 4: 将灰度图像转换为彩色图像
     color_magnitude_spectrum = cv2.applyColorMap(magnitude_spectrum, cv2.COLORMAP_JET)
     
+    # Step 4.1: 使用拉普拉斯算子增强边缘
+    laplacian = cv2.Laplacian(image, cv2.CV_64F)
+    laplacian = np.uint8(255 * (laplacian - np.min(laplacian)) / (np.max(laplacian) - np.min(laplacian)))
+    color_laplacian = cv2.applyColorMap(laplacian, cv2.COLORMAP_JET)
+
+    # Step 4.2: 将幅值谱和边缘图像进行融合
+    combined_image = cv2.addWeighted(color_magnitude_spectrum, 0.7, color_laplacian, 0.3, 0)
     # Step 5: 保存结果图像
     output_name = os.path.splitext(os.path.basename(image_path))[0] + '_frequency.png'
     output_path = os.path.join(output_path, output_name)
@@ -143,7 +150,7 @@ def get_frequency(image_path, output_path, method='DCT'):
     return color_magnitude_spectrum
 
 if __name__ == "__main__":
-    input_path = '/Users/river/Downloads/flickr_0003'
+    input_path = '/Users/river/Downloads/0_real'
     # output_path = '/mnt/data2/users/hilight/yiwei/dataset/frequency'
     output_path = './'
     os.makedirs(output_path, exist_ok=True)
