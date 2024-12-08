@@ -2,6 +2,7 @@ import os
 import cv2
 import numpy as np
 from tqdm import tqdm
+from scipy import fftpack
 
 def fft_filter(im, mode=1):
     im = im.astype(np.float32)
@@ -38,7 +39,7 @@ def fft_filter(im, mode=1):
         im[:,:,i] = fft_img
     return np.transpose(im, (2,0,1))
 
-def get_average_frequency(directory, method='DCT'):
+def get_average_frequency(directory, method='FFT'):
     image_list = get_image_list(directory)
     frequency_sum = None
     count = 0
@@ -53,8 +54,10 @@ def get_average_frequency(directory, method='DCT'):
             f_transform = cv2.dft(np.float32(image), flags=cv2.DFT_COMPLEX_OUTPUT)
             magnitude_spectrum = 20 * np.log(cv2.magnitude(f_transform[:, :, 0], f_transform[:, :, 1]) + 1)
         elif method == 'FFT':
-            f_transform = np.fft.fft2(image)
-            f_shift = np.fft.fftshift(f_transform)
+            # f_transform = np.fft.fft2(image)
+            # f_shift = np.fft.fftshift(f_transform)
+            f_transform = fftpack.fft2(image)
+            f_shift = fftpack.fftshift(f_transform)
             magnitude_spectrum = 20 * np.log(np.abs(f_shift) + 1)
         elif method == 'DCT':
             f_transform = cv2.dct(np.float32(image))
@@ -83,7 +86,7 @@ def get_average_frequency(directory, method='DCT'):
 
     return average_frequency
 
-def save_average_frequency_image(directory, output_path, method='DCT'):
+def save_average_frequency_image(directory, output_path, method='FFT'):
     average_frequency = get_average_frequency(directory, method)
     
     # Normalize the average frequency to 0-255
@@ -93,12 +96,12 @@ def save_average_frequency_image(directory, output_path, method='DCT'):
     color_average_frequency = cv2.applyColorMap(normalized_frequency, cv2.COLORMAP_JET)
     
     # Enhance contrast using CLAHE (Contrast Limited Adaptive Histogram Equalization)
-    clahe = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(8, 8))
-    lab = cv2.cvtColor(color_average_frequency, cv2.COLOR_BGR2LAB)
-    lab_planes = list(cv2.split(lab))
-    lab_planes[0] = clahe.apply(lab_planes[0])
-    lab = cv2.merge(lab_planes)
-    color_average_frequency = cv2.cvtColor(lab, cv2.COLOR_LAB2BGR)
+    # clahe = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(8, 8))
+    # lab = cv2.cvtColor(color_average_frequency, cv2.COLOR_BGR2LAB)
+    # lab_planes = list(cv2.split(lab))
+    # lab_planes[0] = clahe.apply(lab_planes[0])
+    # lab = cv2.merge(lab_planes)
+    # color_average_frequency = cv2.cvtColor(lab, cv2.COLOR_LAB2BGR)
     
     # Save the result image
     output_name = 'average_frequency.png'
@@ -132,7 +135,7 @@ def get_frequency(image_path, output_path, method='DCT'):
     elif method == 'FFT':
         f_transform = np.fft.fft2(image)
         f_shift = np.fft.fftshift(f_transform)  # 移频操作，低频移动到中心
-        magnitude_spectrum = 20 * np.log(np.abs(f_shift) + 1)  # 计算幅值谱
+        magnitude_spectrum = 1 * np.log(np.abs(f_shift) + 1)  # 计算幅值谱
     elif method == 'DCT':
         f_transform = cv2.dct(np.float32(image))
         magnitude_spectrum = np.log(np.abs(f_transform) + 1)
@@ -145,20 +148,20 @@ def get_frequency(image_path, output_path, method='DCT'):
     color_magnitude_spectrum = cv2.applyColorMap(magnitude_spectrum, cv2.COLORMAP_JET)
     
     # Step 4.1: 使用拉普拉斯算子增强边缘
-    laplacian = cv2.Laplacian(image, cv2.CV_64F)
-    laplacian = np.uint8(255 * (laplacian - np.min(laplacian)) / (np.max(laplacian) - np.min(laplacian)))
-    color_laplacian = cv2.applyColorMap(laplacian, cv2.COLORMAP_JET)
+    # laplacian = cv2.Laplacian(image, cv2.CV_64F)
+    # laplacian = np.uint8(255 * (laplacian - np.min(laplacian)) / (np.max(laplacian) - np.min(laplacian)))
+    # color_laplacian = cv2.applyColorMap(laplacian, cv2.COLORMAP_JET)
 
     # Step 4.2: 将幅值谱和边缘图像进行融合
-    combined_image = cv2.addWeighted(color_magnitude_spectrum, 0.7, color_laplacian, 0.3, 0)
+    # combined_image = cv2.addWeighted(color_magnitude_spectrum, 0.7, color_laplacian, 0.3, 0)
     # Step 5: 保存结果图像
     output_name = os.path.splitext(os.path.basename(image_path))[0] + '_frequency.png'
     output_path = os.path.join(output_path, output_name)
-    cv2.imwrite(output_path, combined_image)
+    cv2.imwrite(output_path, color_magnitude_spectrum)
     return combined_image
 
 if __name__ == "__main__":
-    input_path = '/Users/river/Downloads/0_real'
+    input_path = '/mnt/data2/users/hilight/datasets/FakeSocialMedia/Images/sdxl_lightning'
     # output_path = '/mnt/data2/users/hilight/yiwei/dataset/frequency'
     output_path = './'
     os.makedirs(output_path, exist_ok=True)

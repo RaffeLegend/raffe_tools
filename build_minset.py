@@ -45,8 +45,8 @@ def copy_images_with_limit(src_dir, dst_dir, max_files_per_folder):
 if __name__ == "__main__":
     # Example usage
     source_directory = "/mnt/data2/users/hilight/yiwei/dataset/FakeSocial/"
-    destination_directory = "/mnt/data2/users/hilight/yiwei/dataset/MiniTest/"
-    max_files = 1000  # Maximum number of files per folder
+    destination_directory = "/mnt/data2/users/hilight/yiwei/dataset/PaperSet/"
+    max_files = 80000  # Maximum number of files per folder
 
     copy_images_with_limit(source_directory, destination_directory, max_files)
 

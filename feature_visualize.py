@@ -15,7 +15,11 @@ from pytorch_grad_cam.utils.image import (
 )
 from pytorch_grad_cam.utils.model_targets import ClassifierOutputTarget
 
+import sys
+sys.path.append(os.path.join(os.path.dirname(__file__), "../RaffeModelTraining"))
+sys.path.append(os.path.join(os.path.dirname(__file__), "../RaffeModelTraining/src"))
 
+'''
 def get_args():
     parser = argparse.ArgumentParser()
     parser.add_argument('--device', type=str, default='gpu',
@@ -51,6 +55,16 @@ def get_args():
         print('Using CPU for computation')
 
     return args
+'''
+
+class Config:
+    def __init__(self, device, image_path, aug_smooth, eigen_smooth, method, output_dir):
+        self.device = device
+        self.image_path = image_path
+        self.aug_smooth = aug_smooth
+        self.eigen_smooth = eigen_smooth
+        self.method = method
+        self.output_dir = output_dir
 
 
 if __name__ == '__main__':
@@ -61,7 +75,7 @@ if __name__ == '__main__':
         3. Combining both
     """
 
-    args = get_args()
+    # args = get_args()
     methods = {
         "gradcam": GradCAM,
         "hirescam": HiResCAM,
@@ -77,7 +91,30 @@ if __name__ == '__main__':
         'kpcacam': KPCA_CAM
     }
 
-    model = models.resnet50(pretrained=True).to(torch.device(args.device)).eval()
+    # model = models.resnet50(pretrained=True).to(torch.device(args.device)).eval()
+    args = Config(
+        device = "cuda:0",
+        image_path = "samples/biggan/00521495.png",
+        aug_smooth = True,
+        eigen_smooth = True,
+        method = "gradcam",
+        output_dir = "./",
+    )
+    from src.engine.trainer import Trainer
+    from src.engine.validator import Validator
+    from src.options import config_settings
+    opt = config_settings()
+    trainer = Trainer(opt.train)
+    validator = Validator(opt.val)
+    validator.update(trainer.model, None)
+    net_state_dict = torch.load(opt.test.model_path, map_location='cuda:0')
+    validator.model.load_state_dict(net_state_dict['model'])
+    validator.model.eval()
+
+    print(validator.model)
+    model = validator.model
+    target_layers = [model.encoder.model.layer4]
+    
 
     # Choose the target layer you want to compute the visualization for.
     # Usually this will be the last convolutional layer in the model.
@@ -92,7 +129,7 @@ if __name__ == '__main__':
     # from pytorch_grad_cam.utils.find_layers import find_layer_types_recursive
     # find_layer_types_recursive(model, [torch.nn.ReLU])
     
-    target_layers = [model.layer4]
+    # target_layers = [model.layer4]
 
     rgb_img = cv2.imread(args.image_path, 1)[:, :, ::-1]
     rgb_img = np.float32(rgb_img) / 255
@@ -105,8 +142,8 @@ if __name__ == '__main__':
     # If targets is None, the highest scoring category (for every member in the batch) will be used.
     # You can target specific categories by
     # targets = [ClassifierOutputTarget(281)]
-    # targets = [ClassifierOutputTarget(281)]
-    targets = None
+    targets = [ClassifierOutputTarget(0)]
+    # targets = None
 
     # Using the with statement ensures the context is freed, and you can
     # recreate different CAM objects in a loop.
