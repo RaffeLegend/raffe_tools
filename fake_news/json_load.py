@@ -29,10 +29,10 @@ def filter_json(input_file, output_file, condition):
 # Example condition function
 def example_condition(entry):
     # Check if 'image_path' contains the specified string
-    return '/bbc/images/0000/' in entry.get('image_path', '')
+    return '/washington_post/images/0000/' in entry.get('image_path', '')
 
 if __name__ == "__main__":
-    input_path = "data.json"  # Replace with the path to your input JSON file
+    input_path = "/mnt/data1/users/yiwei/data/origin/data.json"  # Replace with the path to your input JSON file
     output_path = "output.json"  # Replace with the desired output file path
     
     # Ensure the input file exists
